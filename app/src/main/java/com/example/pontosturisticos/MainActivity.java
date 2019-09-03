@@ -60,5 +60,7 @@ public class MainActivity extends AppCompatActivity {
         this.pTuristicos.add(new PontosTuristicos("2", "Catedral", 0.800, "catedral"));
         this.pTuristicos.add(new PontosTuristicos("3", "Fazenda Santa Maria do Monjolinho", 11.200, "fazenda"));
         this.pTuristicos.add(new PontosTuristicos("4", "Paróquia São Sebastião", 2.400, "paroquia"));
+        this.pTuristicos.add(new PontosTuristicos("5", "Shopping Iguatemi", 4.600, "iguatemi"));
+        this.pTuristicos.add(new PontosTuristicos("6", "Shopping Passeio", 4.300, "passeio"));
     }
 }
