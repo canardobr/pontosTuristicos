@@ -5,10 +5,10 @@ public class PontosTuristicos {
     // Atributos da classe
     private String id;
     private String nome;
-    private Double distancia;
+    private Float distancia;
     private String imagem;
 
-    public PontosTuristicos(String id, String nome, Double distancia, String imagem) {
+    public PontosTuristicos(String id, String nome, Float distancia, String imagem) {
         this.id = id;
         this.nome = nome;
         this.distancia = distancia;
@@ -31,11 +31,11 @@ public class PontosTuristicos {
         this.nome = nome;
     }
 
-    public Double getDistancia() {
+    public Float getDistancia() {
         return distancia;
     }
 
-    public void setDistancia(Double distancia) {
+    public void setDistancia(Float distancia) {
         this.distancia = distancia;
     }
 

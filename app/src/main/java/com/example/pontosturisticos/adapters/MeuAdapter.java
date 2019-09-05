@@ -51,7 +51,24 @@ public class MeuAdapter extends ArrayAdapter<PontosTuristicos>{
 
         TextView distancia = listItem.findViewById(R.id.text_view_distancia_pTuristicos);
         // Define a distancia
-        distancia.setText("Distância "+pTuristicoAtual.getDistancia().toString().replace(".",",")+"km");
+
+        if(pTuristicoAtual.getDistancia() >= 1)
+        {
+            distancia.setText("Distância "+pTuristicoAtual.getDistancia().toString().replace(".",",")+"km");
+            distancia.setText("Distância "+String.format("%.2f", pTuristicoAtual.getDistancia()).
+                    replace(".", ",")+"km");
+        }
+        else
+        {
+            float distanciaTemp =  pTuristicoAtual.getDistancia() * 1000;
+
+            distancia.setText("Distância "+pTuristicoAtual.getDistancia().toString().replace(".",",")+"km");
+            distancia.setText("Distância "+String.format("%.0f", distanciaTemp).
+                    replace(".", ",")+"m");
+        }
+
+        //distancia.setText(pTuristicoAtual.getDistancia().toString());
+
 
 
         ImageView imageViewFoto = listItem.findViewById(R.id.image_view_pTuristicos);
