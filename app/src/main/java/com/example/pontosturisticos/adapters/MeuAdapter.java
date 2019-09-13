@@ -16,6 +16,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.example.pontosturisticos.MainActivity;
 import com.example.pontosturisticos.R;
 import com.example.pontosturisticos.modelos.PontosTuristicos;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +75,13 @@ public class MeuAdapter extends ArrayAdapter<PontosTuristicos>{
         ImageView imageViewFoto = listItem.findViewById(R.id.image_view_pTuristicos);
         // Define a Imagem
         //imageViewFoto.setImageResource(R.drawable.+pTuristicoAtual.getImagem());
-        imageViewFoto.setImageResource(context.getResources().getIdentifier(pTuristicoAtual.getImagem(), "drawable", context.getPackageName()));
+        //imageViewFoto.setImageResource(context.getResources().getIdentifier(pTuristicoAtual.getImagem(), "drawable", context.getPackageName()));
+
+        Picasso.get()
+                .load(pTuristicoAtual.getImagem())
+                .resize(70,70)
+                .centerCrop()
+                .into(imageViewFoto);
 
         /*if(Boolean.parseBoolean(tarefaAtual.getStatus().toString()))
         {

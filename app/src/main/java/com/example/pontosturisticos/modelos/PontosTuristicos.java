@@ -8,6 +8,8 @@ public class PontosTuristicos {
     private Float distancia;
     private String imagem;
 
+    public PontosTuristicos(){};
+
     public PontosTuristicos(String id, String nome, Float distancia, String imagem) {
         this.id = id;
         this.nome = nome;
@@ -27,6 +29,7 @@ public class PontosTuristicos {
         return nome;
     }
 
+
     public void setNome(String nome) {
         this.nome = nome;
     }
@@ -45,5 +48,15 @@ public class PontosTuristicos {
 
     public void setImagem(String imagem) {
         this.imagem = imagem;
+    }
+
+    @Override
+    public String toString() {
+        return "PontosTuristicos{" +
+                "id='" + id + '\'' +
+                ", nome='" + nome + '\'' +
+                ", distancia=" + distancia +
+                ", imagem='" + imagem + '\'' +
+                '}';
     }
 }

@@ -1,5 +1,6 @@
 package com.example.pontosturisticos;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -20,18 +21,28 @@ import com.example.pontosturisticos.modelos.PontosTuristicos;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
+    private FirebaseDatabase firebaseDatabase;
+    private DatabaseReference databaseReference;
     private ListView listView;
-    private List<PontosTuristicos> pTuristicos = new ArrayList<>();
+    private List<PontosTuristicos> pTuristicos = new ArrayList<PontosTuristicos>();
     private ArrayAdapter<PontosTuristicos> arrayAdapterPTuristicos;
     private FusedLocationProviderClient fusedLocClient;
     private static final int CODIGO_REQUISICAO = 123;
     private Location minhaLocalizacao = new Location("Minha localização");
+    private String nomeBanco = "pontos_turisticos";
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -50,6 +61,8 @@ public class MainActivity extends AppCompatActivity {
             }, CODIGO_REQUISICAO);
         }
 
+        listView = findViewById(R.id.list_view_pTuristicos);
+
         fusedLocClient = LocationServices.getFusedLocationProviderClient(this);
         fusedLocClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
             @Override
@@ -61,11 +74,17 @@ public class MainActivity extends AppCompatActivity {
                     //Toast.makeText(MainActivity.this, latitude.toString(), Toast.LENGTH_LONG).show();
                     minhaLocalizacao.setLatitude(location.getLatitude());
                     minhaLocalizacao.setLongitude(location.getLongitude());
-                    criarPTuristico();
-                    criarListView();
+                    //criarPTuristico();
+                    //criarListView();
+                    conectarBanco();
+                    eventoBanco();
+                    //salvarDado();
                 }
             }
         });
+
+        //criarPTuristico();
+
 
     }
 
@@ -92,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void criarListView()
     {
-        listView = findViewById(R.id.list_view_pTuristicos);
 
         arrayAdapterPTuristicos = new MeuAdapter(MainActivity.this, (ArrayList<PontosTuristicos>) pTuristicos);
         listView.setAdapter(arrayAdapterPTuristicos);
@@ -101,12 +119,6 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                //faz alguma coisa
-                // Exibe uma mensagem
-                Toast toast = Toast.makeText(getApplicationContext(), "Você está há "
-                        +pTuristicos.get(i).getDistancia().toString().
-                        replace(".",",")+"km do destino", Toast.LENGTH_LONG);
-                toast.show();
 
                 //Abrindo a nova activity
                /* Intent intent = new Intent(MainActivity.this, TarefaActivity.class);
@@ -115,5 +127,99 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);*/
             }
         });
+    }
+
+    private void conectarBanco()
+    {
+        FirebaseApp.initializeApp(MainActivity.this);
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        databaseReference = firebaseDatabase.getReference();
+    }
+
+    private void eventoBanco() {
+
+        databaseReference
+                .child(nomeBanco)
+                .orderByChild("nome")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        pTuristicos.clear();
+                        for(DataSnapshot snapshot: dataSnapshot.getChildren())
+                        {
+                            PontosTuristicos pTurisco = snapshot.getValue(PontosTuristicos.class);
+                            pTuristicos.add(pTurisco);
+                        }
+
+                        arrayAdapterPTuristicos = new MeuAdapter(MainActivity.this, (ArrayList<PontosTuristicos>) pTuristicos);
+                        listView.setAdapter(arrayAdapterPTuristicos);
+
+                        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                            @Override
+                            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                                //apagarDado(tarefas.get(i));
+                                return true;
+                            }
+                        });
+
+                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                if(Float.parseFloat(pTuristicos.get(i).getDistancia().toString()) >= 1)
+                                {
+                                    String distancia = pTuristicos.get(i).getDistancia().toString();
+                                    String msg = "Você está há "
+                                            + String.format("%.2f", Float.parseFloat(distancia))
+                                            .replace(".",",")+"km do destino";
+
+                                    Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+
+                                }
+                                else
+                                {
+
+                                    Float calc = pTuristicos.get(i).getDistancia() * 1000;
+                                    String msg = "Você está há "
+                                            + String.format("%.0f",calc)
+                                            .replace(".",",")+"m do destino";
+
+                                    Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+
+                                }
+
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Toast.makeText(MainActivity.this, "Erro ao se comunicar com o banco!", Toast.LENGTH_LONG).show();
+                    }
+                });
+
+    }
+
+    public void salvarDado(View v) {
+        PontosTuristicos pTurisco = new PontosTuristicos(UUID.randomUUID().toString(), "Parque Ecológico", calcularDistancia(-21.98480695, -47.87445318), "pqecologico");
+        databaseReference.child(this.nomeBanco).child(pTurisco.getId()).setValue(pTurisco);
+
+        pTurisco = new PontosTuristicos(UUID.randomUUID().toString(), "Catedral", calcularDistancia(-22.018229, -47.8934227), "catedral");
+        databaseReference.child(this.nomeBanco).child(pTurisco.getId()).setValue(pTurisco);
+
+        pTurisco = new PontosTuristicos(UUID.randomUUID().toString(), "Fazenda Santa Maria do Monjolinho", calcularDistancia(-22.038795, -47.9661216), "fazenda");
+        databaseReference.child(this.nomeBanco).child(pTurisco.getId()).setValue(pTurisco);
+
+        pTurisco = new PontosTuristicos(UUID.randomUUID().toString(), "Paróquia São Sebastião", calcularDistancia(-22.01109315, -47.88724716), "paroquia");
+        databaseReference.child(this.nomeBanco).child(pTurisco.getId()).setValue(pTurisco);
+
+        pTurisco = new PontosTuristicos(UUID.randomUUID().toString(), "Shopping Iguatemi", calcularDistancia(-22.0186133, -47.9165911), "iguatemi");
+        databaseReference.child(this.nomeBanco).child(pTurisco.getId()).setValue(pTurisco);
+
+        pTurisco = new PontosTuristicos(UUID.randomUUID().toString(), "Shopping Passeio", calcularDistancia(-22.00513986, -47.90430933), "passeio");
+        databaseReference.child(this.nomeBanco).child(pTurisco.getId()).setValue(pTurisco);
+
+
     }
 }
